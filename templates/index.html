@@ -3,29 +3,46 @@
 
 {% block content %}
 <section id="home" class="page active">
-            <div class="hero">
-                <h1>Свежие фрукты и овощи с доставкой</h1>
-                <p>Наш магазин предлагает лучшие сезонные продукты от местных фермеров. Всегда свежие, всегда натуральные!</p>
-                <a href="/goods" class="btn">Смотреть товары</a>
-            </div>
+    <div class="hero">
+        <h1>Свежие фрукты и овощи с доставкой</h1>
+        <p>Наш магазин предлагает лучшие сезонные продукты от местных фермеров. Всегда свежие, всегда натуральные!</p>
+        <a href="/goods" class="btn">Смотреть товары</a>
+    </div>
 
-            <h2 class="section-title">Наши преимущества</h2>
-            <div class="products-grid">
-                <div class="feature-card">
-                    <i class="fas fa-shipping-fast fa-3x"></i>
-                    <h3>Быстрая доставка</h3>
-                    <p>Доставка в течение 2 часов по всему району</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-leaf fa-3x"></i>
-                    <h3>Экологично</h3>
-                    <p>Продукты без пестицидов и химикатов</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-money-bill-wave fa-3x"></i>
-                    <h3>Доступные цены</h3>
-                    <p>Прямые поставки от производителей</p>
-                </div>
+    <div class="shop-info">
+        <div class="shop-info-content">
+            <div class="shop-info-image">
+                <img src="{{url_for('static', filename='images/shop.webp') }}"
+                     alt="Наш магазин">
             </div>
-        </section>
+            <div class="shop-info-text">
+                <h2>О нашем магазине</h2>
+                <p>Мы - семейный бизнес, работающий с 2020 года. Наша миссия - обеспечивать наших клиентов свежими и
+                    качественными продуктами прямо с фермы.</p>
+                <p>Все наши поставщики проходят тщательный отбор, чтобы вы могли наслаждаться только лучшими фруктами и
+                    овощами.</p>
+                <a href="/about" class="btn btn-primary">Узнать больше</a>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="section-title">Наши преимущества</h2>
+    <div class="products-grid">
+        <div class="feature-card">
+            <i class="fas fa-shipping-fast fa-3x"></i>
+            <h3>Быстрая доставка</h3>
+            <p>Доставка в течение 2 часов по всему району</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-leaf fa-3x"></i>
+            <h3>Экологично</h3>
+            <p>Продукты без пестицидов и химикатов</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-money-bill-wave fa-3x"></i>
+            <h3>Доступные цены</h3>
+            <p>Прямые поставки от производителей</p>
+        </div>
+    </div>
+</section>
 {% endblock %}

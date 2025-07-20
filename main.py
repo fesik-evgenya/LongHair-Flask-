@@ -21,12 +21,10 @@ debug = False
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-
 # Заглушка для user_loader
 @login_manager.user_loader
 def load_user(user_id):
     return None
-
 
 # обработка 404
 @app.errorhandler(404)
@@ -35,10 +33,33 @@ def not_found(y):
 
 @app.route('/')
 @app.route('/index')
+@app.route('/home')
 def index():
+    return render_template('index.html', title="Район {Фруктовый}")
 
-    return render_template('index.html', title="Район {Фруктовый}", current_user=current_user)
+# Добавленные маршруты
+@app.route('/about')
+def about():
+    return render_template('about.html', title="Район {Фруктовый} | О нас")
 
+@app.route('/goods')
+def goods():
+    return render_template('goods.html', title="Район {Фруктовый} | Товары")
+
+@app.route('/contacts')
+def contacts():
+    params = dict()
+    params['phone'] = '+7 (999) 999-99-99'
+    params['email'] = 'info@rayon-fruktovy.ru'
+    params['address'] = 'г. Санкт-Петербург, Среднерогатская ул. д.12к1'
+    params['vk_group'] = 'https://vk.com/rayon-fruktovy'
+    params['telegram'] = '#'
+    params['whatsapp'] = '#'
+    params['map_coords'] = [59.824518, 30.337296]
+    params['logo_path'] = url_for('static', filename='images/logo/favicon.svg')
+
+    return render_template(
+        'contacts.html', title="Район {Фруктовый} | Контакты", **params)
 
 if __name__ == '__main__':
     # db_session.global_init('../shop_Fruit-District/db/news.sqlite')

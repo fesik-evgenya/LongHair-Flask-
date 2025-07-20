@@ -1,27 +1,89 @@
 {% extends "base.html"%}
 
-
 {% block content %}
-<div class="contacts-block">
-    <div class="contact-item">
-        <img src="./assets/images/icons/icon-home.svg" alt="Адрес" class="contact-item__icon">
-        <p class="contact-item__text" data-admin-field="address">{{address}}</p>
+<section id="contact" class="page">
+    <h2 class="section-title">Свяжитесь с нами</h2>
+    <div class="contact-container">
+        <div class="contact-info">
+            <h3>Наши контакты</h3>
+                <!-- Контейнер для карты -->
+    <div style="background: var(--white); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); margin-top: 2rem;">
+        <h3 style="text-align: center; margin-bottom: 1.5rem;">Мы на карте</h3>
+        <div id="map"
+             style="height: 300px; border-radius: var(--radius);"
+             data-center='{{ map_coords | tojson }}'
+             data-logo="{{ logo_path }}">
     </div>
+    </div>
+            <div class="contact-details">
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <h4>Адрес</h4>
+                        <p>{{address}}</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <div>
+                        <h4>Телефон</h4>
+                        <p>{{phone}}</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <h4>Email</h4>
+                        <p>{{email}}</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <h4>Часы работы</h4>
+                        <p>Пн-Пт: 8:00 - 20:00<br>Сб-Вс: 9:00 - 18:00</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fab fa-vk contact-item__icon"></i>
+                    <a href="{{vk_group}}" class="contact-link" target="_blank">Мы ВКонтакте</a>
+                </div>
+            </div>
+            <div class="social-links">
+                <a href="{{vk_group}}"><i class="fab fa-vk"></i></a>
+                <a href="{{telegram}}"><i class="fab fa-telegram"></i></a>
+                <a href="{{whatsapp}}"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
 
-    <div class="contact-item">
-        <img src="./assets/images/icons/icon_email.svg" alt="Email" class="contact-item__icon">
-        <a href="mailto:my-longhair@mail.ru" class="contact-link" data-admin-field="email">{{email}}</a>
+        <div class="contact-form">
+            <h3>Напишите нам</h3>
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="name">Ваше имя</label>
+                    <input type="text" id="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Тема</label>
+                    <input type="text" id="subject" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">Сообщение</label>
+                    <textarea id="message" class="form-control" required></textarea>
+                </div>
+                <button type="submit" class="btn">Отправить сообщение</button>
+            </form>
+        </div>
     </div>
+</section>
+{% endblock %}
 
-    <div class="contact-item">
-        <img src="./assets/images/icons/icon_phone.svg" alt="Телефон" class="contact-item__icon">
-        <a href="tel:+79913676565" class="contact-link" data-admin-field="phone">{{phone}}</a>
-    </div>
-
-    <div class="contact-item">
-        <img src="./assets/images/icons/icon_VK.svg" alt="Vkontante" class="contact-item__icon">
-        <a href="{{vk_group}}" class="contact-link" data-admin-field="vk_link">Группа
-            в VK</a>
-    </div>
-</div>
+{% block page_scripts %}
+    {{ super() }}
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=cd75c453-5925-4862-8f2e-acd46e2b692a&lang=ru_RU"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 {% endblock %}

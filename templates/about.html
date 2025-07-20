@@ -1,7 +1,53 @@
 {% extends "base.html"%}
 
-
 {% block content %}
-<h1>Наша компания предоставляет весь спект услуг</h1>
-<a href="/">{{price}}</a>
+<section id="about" class="page">
+    <h2 class="section-title">О нашем магазине</h2>
+    <div class="about-content">
+        <div class="about-text">
+            <p>Магазин "Фруктовый Район" был основан в 2020 году с целью обеспечить жителей нашего района свежими и
+                качественными продуктами напрямую от местных фермеров.</p>
+            <p>Мы тщательно отбираем поставщиков, посещаем фермы лично и контролируем качество каждого продукта, который
+                попадает на наши прилавки.</p>
+            <p>Наша миссия - сделать здоровое питание доступным и приятным. Мы верим, что свежие фрукты и овощи - основа
+                здорового образа жизни.</p>
+            <p>В нашем магазине вы найдете только сезонные продукты, выращенные с заботой о природе и вашем
+                здоровье.</p>
+            <div style="margin-top: 2rem;">
+                <a href="/goods" class="btn">Наши товары</a>
+            </div>
+        </div>
+        <div class="about-image"></div>
+    </div>
+
+    <h2 class="section-title">Наша команда</h2>
+    <div class="products-grid">
+        <div class="product-card">
+            <div class="product-image"
+                 style="background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80')"></div>
+            <div class="product-info">
+                <h3 class="product-title">Рустам Саидов</h3>
+                <p class="product-description">Основатель и главный закупщик. Знает каждого фермера лично.</p>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image"
+                 style="background-image: url('https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80')"></div>
+            <div class="product-info">
+                <h3 class="product-title">Мария Сидорова</h3>
+                <p class="product-description">Менеджер по качеству. Проверяет каждую партию товара.</p>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image"
+                 style="background-image: url('https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=600&q=80')"></div>
+            <div class="product-info">
+                <h3 class="product-title">Дмитрий Иванов</h3>
+                <p class="product-description">Логист. Обеспечивает быструю и бережную доставку.</p>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
