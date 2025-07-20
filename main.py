@@ -1,0 +1,35 @@
+from flask import Flask, url_for, request, render_template, redirect
+from flask_login import login_manager, LoginManager, login_user, logout_user
+from werkzeug.utils import secure_filename
+import os.path
+import sqlite3
+from forms.loginform import LoginForm
+from data import db_session
+from sqlite3 import Error
+from data.users import User
+from data.news import News
+from forms.user import Register
+
+# регистрируем приложение
+app = Flask(__name__)
+
+
+ALLOWED_EXTENSIONS = ['txt', 'pdf', 'zip', 'jpg', 'png']
+debug = False
+
+
+# обработка 404
+@app.errorhandler(404)
+def not_found(y):
+    return render_template('404.html', title="Не найдено")
+
+@app.route('/')
+@app.route('/index')
+def index():
+
+    return render_template('index.html', title="Фруктовый район")
+
+
+if __name__ == '__main__':
+    # db_session.global_init('../shop_Fruit-District/db/news.sqlite')
+    app.run(host='localhost', port=5000, debug=debug)
