@@ -1,5 +1,5 @@
 from flask import Flask, url_for, request, render_template, redirect
-from flask_login import login_manager, LoginManager, login_user, logout_user
+from flask_login import LoginManager, current_user
 from werkzeug.utils import secure_filename
 import os.path
 import sqlite3
@@ -13,9 +13,19 @@ from forms.user import Register
 # регистрируем приложение
 app = Flask(__name__)
 
-
+app.secret_key = 'Tdutif_85'
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'zip', 'jpg', 'png']
 debug = False
+
+# Инициализация Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+# Заглушка для user_loader
+@login_manager.user_loader
+def load_user(user_id):
+    return None
 
 
 # обработка 404
@@ -27,7 +37,7 @@ def not_found(y):
 @app.route('/index')
 def index():
 
-    return render_template('index.html', title="Фруктовый район")
+    return render_template('index.html', title="Район {Фруктовый}", current_user=current_user)
 
 
 if __name__ == '__main__':

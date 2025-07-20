@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shorcut icon" href="{{url_for('static', filename='./images/logo/logo.svg')}}" type="image/svg">
+    <link rel="shorcut icon" href="{{url_for('static', filename='./images/logo/favicon.svg')}}" type="image/svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
     <title>{{ title }}</title>
@@ -12,8 +12,7 @@
 <header>
     <div class="header-container">
         <div class="logo">
-            <img src="{{url_for('static', filename='images/logo.svg')}}" alt="логотип компании">
-            <span>Фруктовый Район</span>
+            <img src="{{url_for('static', filename='./images/logo/logo_white.svg')}}" alt="логотип компании">
         </div>
         <nav>
             <button class="mobile-menu-btn" id="menuToggle">
@@ -24,7 +23,7 @@
                 <li><a href="/goods" data-page="products" class="nav-link">Товары</a></li>
                 <li><a href="/about" data-page="about" class="nav-link">О нас</a></li>
                 <li><a href="/contacts" data-page="contact" class="nav-link">Контакты</a></li>
-                {% if current_user.is_authenticated %}
+                {% if current_user and current_user.is_authenticated %}
                 <a class="navbar-brand" href="/logout">{{current_user.name}}</a>
                 <a class="navbar-brand" href="/basket">{{current_user.name}}</a> <!-- вставить лого корзины-->
                 {% else %}
