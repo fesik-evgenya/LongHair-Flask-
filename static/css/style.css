@@ -165,7 +165,7 @@ main {
 /* Сетка контактной страницы */
 .contact-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Две колонки */
+    grid-template-columns: 1fr 1fr; /* Две колонки */
     gap: 2.5rem;
     margin-bottom: 3rem;
 }
@@ -202,6 +202,7 @@ main {
     flex-direction: column;
     gap: 1.8rem;
     margin-bottom: 2rem;
+    margin-top: 2rem;
 }
 
 .contact-item {
@@ -288,15 +289,10 @@ main {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Блок формы */
-.contact-form {
-    grid-column: span 2; /* Занимает всю ширину */
-}
-
 /* Стили формы */
 .form-group {
     position: relative;
-    margin-bottom: 2rem;
+    margin: 2rem auto;
 }
 
 .form-group label {
@@ -859,10 +855,19 @@ footer {
     .hero p {
         font-size: 1rem;
     }
+     /* карта */
+     .map {
+        background: var(--white);
+        border-radius: var(--radius);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+         margin-top: 2rem;
+     }
 
     /* Адаптив контактов */
     .contact-details {
         gap: 1.2rem;
+        margin: 2rem auto;
     }
 
     .contact-item {
@@ -946,6 +951,7 @@ footer {
     .contact-map,
     .contact-form {
         padding: 1.5rem;
+        margin: 15px auto
     }
 
     .contact-item {
