@@ -6,15 +6,16 @@
     <div class="contact-container">
         <div class="contact-info">
             <h3>Наши контакты</h3>
-                <!-- Контейнер для карты -->
-    <div style="background: var(--white); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); margin-top: 2rem;">
-        <h3 style="text-align: center; margin-bottom: 1.5rem;">Мы на карте</h3>
-        <div id="map"
-             style="height: 300px; border-radius: var(--radius);"
-             data-center='{{ map_coords | tojson }}'
-             data-logo="{{ logo_path }}">
-    </div>
-    </div>
+            <!-- Контейнер для карты -->
+
+            <div class="map" >
+                <h3 style="text-align: center; margin-bottom: 1.5rem;">Мы на карте</h3>
+                <div id="map"
+                     style="height: 300px; border-radius: var(--radius);"
+                     data-center='{{ map_coords | tojson }}'
+                     data-logo="{{ logo_path }}">
+                </div>
+            </div>
             <div class="contact-details">
                 <div class="contact-item">
                     <i class="fas fa-map-marker-alt"></i>
@@ -83,7 +84,7 @@
 {% endblock %}
 
 {% block page_scripts %}
-    {{ super() }}
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=cd75c453-5925-4862-8f2e-acd46e2b692a&lang=ru_RU"></script>
-    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+{{ super() }}
+<script src="https://api-maps.yandex.ru/2.1/?apikey=cd75c453-5925-4862-8f2e-acd46e2b692a&lang=ru_RU"></script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
 {% endblock %}
