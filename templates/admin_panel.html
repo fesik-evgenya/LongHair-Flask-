@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-panel">
+    <div class="section-title-container">
+        <h1 class="section-title">Панель администратора</h1>
+        <div class="title-divider"></div>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{{ url_for('add_product') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Добавить товар
+        </a>
+    </div>
+
+    <!-- Существующие разделы (пользователи, заказы, товары) -->
+    <div class="admin-section">
+        <h2>Товары</h2>
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card admin-product-card">
+                <div class="product-image" 
+                     style="background-image: url('{{ product.image_url or url_for('static', filename='images/default-product.jpg') }}')">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">{{ product.name }}</h3>
+                    <p class="product-meta">{{ product.retail_price_with_vat }} ₽ / {{ product.unit }}</p>
+                    <div class="product-actions">
+                        <a href="#" class="btn btn-sm btn-outline">Редактировать</a>
+                        <a href="#" class="btn btn-sm btn-danger">Удалить</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="no-items">
+                <i class="fas fa-box-open fa-3x"></i>
+                <p>Нет товаров в базе</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Остальные разделы (пользователи, заказы) -->
+</div>
+{% endblock %}

@@ -1,2 +1,4 @@
-from . import users
-from . import news
+from . import customers
+from . import orders
+from . import products
+from . import loyalty

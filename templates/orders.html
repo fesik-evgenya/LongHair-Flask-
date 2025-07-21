@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="orders-section">
+    <h2 class="section-title">История заказов</h2>
+    
+    {% if orders %}
+        <div class="orders-list">
+            {% for order in orders %}
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-id">Заказ #{{ order.order_number }}</div>
+                    <div class="order-date">{{ order.order_date.strftime('%d.%m.%Y %H:%M') }}</div>
+                    <div class="order-status {{ order.status|lower|replace(' ', '-') }}">
+                        {{ order.status }}
+                    </div>
+                </div>
+                
+                <div class="order-details">
+                    <div class="order-products">
+                        <p><strong>Товары:</strong></p>
+                        <ul>
+                            <li>{{ order.product_name }} - {{ order.quantity }} {{ order.unit }}</li>
+                            <!-- Дополнительные товары могут быть добавлены здесь -->
+                        </ul>
+                    </div>
+                    
+                    <div class="order-summary">
+                        <p><strong>Сумма заказа:</strong> {{ order.total_price }} руб.</p>
+                        <p><strong>Скидка:</strong> {{ order.discount * 100 }}%</p>
+                        <p><strong>Итого:</strong> {{ order.discounted_price }} руб.</p>
+                    </div>
+                </div>
+                
+                <div class="order-actions">
+                    <a href="#" class="btn btn-small">Повторить заказ</a>
+                    <a href="#" class="btn btn-small">Подробнее</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-orders">
+            <i class="fas fa-shopping-basket"></i>
+            <h3>У вас пока нет заказов</h3>
+            <p>Сделайте свой первый заказ в нашем магазине!</p>
+            <a href="{{ url_for('goods') }}" class="btn btn-primary">Перейти к товарам</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    // Функционал для работы с заказами
+    document.addEventListener('DOMContentLoaded', function() {
+        // Добавить потом код для фильтрации заказов!!!
+    });
+</script>
+{% endblock %}

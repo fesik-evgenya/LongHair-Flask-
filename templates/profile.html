@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="profile-section">
+    <div class="profile-header">
+        <!-- Заголовок и статус -->
+        <h2 class="section-title">Ваш профиль</h2>
+        <div class="user-status">
+            {% if user.status == 0 %}
+                <span class="badge badge-basic">Базовый клиент</span>
+            {% elif user.status == 1 %}
+                <span class="badge badge-silver">Серебряный клиент</span>
+            {% elif user.status == 2 %}
+                <span class="badge badge-gold">Золотой клиент</span>
+            {% elif user.status == 3 %}
+                <span class="badge badge-admin">Администратор</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Информационная панель -->
+    <div class="profile-info">
+        <div class="info-card">
+            <div class="info-header">
+                <i class="fas fa-user-circle"></i>
+                <h3>Личные данные</h3>
+            </div>
+            <div class="info-content">
+                <p><strong>Имя:</strong> {{ user.name }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Телефон:</strong> {{ user.phone }}</p>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-header">
+                <i class="fas fa-home"></i>
+                <h3>Адрес доставки</h3>
+            </div>
+            <div class="info-content">
+                <p>{{ user.street }}, д.{{ user.building }}</p>
+                <p>Парадная: {{ user.entrance or '-' }}</p>
+                <p>Этаж: {{ user.floor or '-' }}, Кв: {{ user.apartment or '-' }}</p>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-header">
+                <i class="fas fa-percentage"></i>
+                <h3>Ваша скидка</h3>
+            </div>
+            <div class="info-content">
+                {% if user.status == 0 %}
+                    <p class="discount-value">0%</p>
+                    <p>Статус: Базовый</p>
+                    <p>Для получения скидки оформите 5 заказов</p>
+                {% elif user.status == 1 %}
+                    <p class="discount-value silver">5%</p>
+                    <p>Статус: Серебряный</p>
+                    <p>Следующий уровень: при заказах на 10 000 руб.</p>
+                {% elif user.status == 2 %}
+                    <p class="discount-value gold">10%</p>
+                    <p>Статус: Золотой</p>
+                    <p>Максимальный уровень</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Действия -->
+    <div class="profile-actions">
+        <a href="{{ url_for('user_orders') }}" class="btn btn-action">
+            <i class="fas fa-shopping-basket"></i> Мои заказы
+        </a>
+        <a href="#" class="btn btn-action">
+            <i class="fas fa-edit"></i> Редактировать профиль
+        </a>
+        <a href="{{ url_for('logout') }}" class="btn btn-action logout">
+            <i class="fas fa-sign-out-alt"></i> Выйти
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    // Дополнительные скрипты для профиля
+    document.addEventListener('DOMContentLoaded', function() {
+        // добавить потом функции для редактирования профиля!!!
+    });
+</script>
+{% endblock %}

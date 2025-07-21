@@ -25,20 +25,44 @@
                 <li><a href="{{ url_for('about') }}" class="nav-link">О нас</a></li>
                 <li><a href="{{ url_for('contacts') }}" class="nav-link">Контакты</a></li>
                 {% if current_user and current_user.is_authenticated %}
-                <li><a class="navbar-brand" href="/logout">{{current_user.name}}</a></li>
-                <li><a class="navbar-brand" href="/basket"><i class="fas fa-shopping-cart"></i></a></li>
+                <li class="user-zone">
+                    <span class="user-greeting">{{ current_user.name }}</span>
+                    <div class="user-actions">
+                        <a href="/profile" class="user-icon">
+                            <i class="fas fa-user"></i>
+                        </a>
+                        <a href="/logout" class="user-icon">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </div>
+                </li>
                 {% else %}
-                <li><a href="/login" class="btn btn-primary">Войти</a></li>
+                <li class="user-zone">
+                    <div class="user-actions">
+                        <a href="/login" class="btn btn-outline btn-sm">Войти</a>
+                        <a href="/register" class="btn btn-primary btn-sm">Регистрация</a>
+                    </div>
+                </li>
                 {% endif %}
             </ul>
         </nav>
     </div>
 </header>
-<div class="row">
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+
+<!-- Flash-сообщения -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-messages">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
 </div>
+{% endif %}
+{% endwith %}
+
+<main>
+    {% block content %}{% endblock %}
+</main>
 
 <!-- Footer -->
 <footer>
@@ -46,7 +70,7 @@
         <div class="footer-col">
             <h3>Район {Фруктовый}</h3>
             <p>Свежие фрукты и овощи с доставкой на дом. Качество, которое вы можете попробовать!</p>
-            <div class="social-links">
+            <div class="footer-social-links">
                 <a href="#"><i class="fab fa-vk"></i></a>
                 <a href="#"><i class="fab fa-telegram"></i></a>
                 <a href="#"><i class="fab fa-whatsapp"></i></a>
