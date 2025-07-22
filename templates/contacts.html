@@ -7,7 +7,7 @@
         <div class="contact-info">
             <!-- Контейнер для карты -->
 
-            <div class="map" >
+            <div class="map">
                 <h3 style="text-align: center; margin-bottom: 1.5rem;">Мы на карте</h3>
                 <div id="map"
                      style="height: 300px; border-radius: var(--radius);"
@@ -16,7 +16,7 @@
                 </div>
             </div>
             <div class="contact-details">
-                <h3>Наши контакты</h3>
+                <h3 style="text-align: center; margin-bottom: 1.5rem;">Наши контакты</h3>
                 <div class="contact-item">
                     <i class="fas fa-map-marker-alt"></i>
                     <div>
@@ -52,28 +52,31 @@
             </div>
         </div>
 
-        <div class="contact-form">
-            <h3>Напишите нам</h3>
-            <form id="contactForm">
-                <div class="form-group">
-                    <label for="name">Ваше имя</label>
-                    <input type="text" id="name" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="subject">Тема</label>
-                    <input type="text" id="subject" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="message">Сообщение</label>
-                    <textarea id="message" class="form-control" required></textarea>
-                </div>
-                <button type="submit" class="btn">Отправить сообщение</button>
-            </form>
-        </div>
+        <form id="contactForm" class="contact-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <h3 style="text-align: center; margin-bottom: 1.5rem;">Напишите нам</h3>
+            <div class="form-group">
+                <label for="name">Ваше имя</label>
+                <input type="text" id="name" name="name" class="form-control" required minlength="2">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Тема</label>
+                <input type="text" id="subject" name="subject" class="form-control" required minlength="5">
+            </div>
+
+            <div class="form-group">
+                <label for="message">Сообщение</label>
+                <textarea id="message" name="message" class="form-control" required minlength="10"></textarea>
+            </div>
+
+            <button type="submit" class="btn">Отправить сообщение</button>
+        </form>
     </div>
 </section>
 {% endblock %}

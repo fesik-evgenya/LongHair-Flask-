@@ -1,25 +1,24 @@
-from flask import Flask, url_for, request, render_template, redirect, flash
+from flask import Flask, url_for, request, render_template, redirect, flash, jsonify
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
-from werkzeug.utils import secure_filename
-import os.path
-import sqlite3
-from sqlite3 import Error
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect, validate_csrf
 
 from data import db_session
-
-from forms.loginform import LoginForm
-from data.customers import Customer # Импорт модели клиентов
+from data.customers import Customer  # Импорт модели клиентов
 from data.orders import Order  # Импорт модели заказов
 from data.products import Product  # Импорт модели продуктов
-from data.loyalty import LoyaltyLevel  # Импорт модели уровней лояльности
-from forms.user import Register
+from forms.loginform import LoginForm
 from forms.product import ProductForm
+from forms.user import Register
+from notifications.send_mail import send_mail
 
 # Регистрируем приложение Flask
 app = Flask(__name__)
 
 # Секретный ключ для сессий и защиты от CSRF
 app.secret_key = 'Tdutif_85'
+csrf = CSRFProtect(app)
 
 # Разрешенные расширения для загрузки файлов
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'zip', 'jpg', 'png']
@@ -30,6 +29,12 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # Страница для входа
 
+# Ограничение: 5 запросов в минуту с одного IP
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,  # Автоматически определяет IP
+    default_limits=["5 per minute"]
+)
 
 # Загрузчик пользователей для Flask-Login
 @login_manager.user_loader
@@ -236,6 +241,59 @@ def add_product():
         return redirect(url_for('admin_panel'))
 
     return render_template('add_product.html', title='Район {Фруктовый} | Добавить товар', form=form)
+
+
+@app.route('/send_contact_form', methods=['GET', 'POST'])  # Явно разрешаем оба метода
+@limiter.limit("5 per minute")
+def send_contact_form():
+    if request.method == 'GET':
+        return jsonify({"error": "Method not allowed"}), 405
+    try:
+        # Получаем JSON данные
+        data = request.get_json()
+
+        # Проверяем обязательные поля
+        required_fields = ['name', 'email', 'subject', 'message', 'csrf_token']
+        if not all(field in data for field in required_fields):
+            return jsonify({
+                "success": False,
+                "message": "Все поля обязательны для заполнения"
+            }), 400
+
+        # Валидация email
+        if '@' not in data['email'] or '.' not in data['email'].split('@')[1]:
+            return jsonify({
+                "success": False,
+                "message": "Введите корректный email"
+            }), 400
+
+        # Отправка письма
+        email_body = f"""
+        Имя: {data['name']}
+        Email: {data['email']}
+        Тема: {data['subject']}
+        Сообщение:
+        {data['message']}
+        """
+
+        if send_mail(
+                to_email="ganef85@mail.ru",
+                subject=f"Новое сообщение: {data['subject']}",
+                message=email_body
+        ):
+            return jsonify({
+                "success": True,
+                "message": "Ваше сообщение успешно отправлено!"
+            })
+
+    except Exception as e:
+        print(f"Ошибка при обработке формы: {str(e)}")
+
+    return jsonify({
+        "success": False,
+        "message": "Произошла ошибка на сервере"
+    }), 500
+
 
 # Главная функция запуска приложения
 if __name__ == '__main__':
