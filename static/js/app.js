@@ -1,30 +1,72 @@
 /**
- * Глобальная функция для обработки отправки контактной формы
- * @param {Event} event - Событие отправки формы
+ * Основной скрипт приложения - обработчики событий и инициализация компонентов
+ * @file app.js
+ * @description Главный JavaScript файл, содержащий всю клиентскую логику приложения
  */
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Мобильное меню
+    // ======================
+    // МОБИЛЬНОЕ МЕНЮ
+    // ======================
     const menuToggle = document.getElementById('menuToggle');
     const navMenu = document.getElementById('navMenu');
 
     if (menuToggle && navMenu) {
+        // Переключение видимости мобильного меню
         menuToggle.addEventListener('click', function() {
             navMenu.classList.toggle('active');
         });
+
+        // Закрытие меню при клике на пункт навигации
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (navMenu.classList.contains('active')) {
+                    navMenu.classList.remove('active');
+                }
+            });
+        });
     }
 
-    // Обработка формы
+    // ======================
+    // ФОРМА ПОИСКА
+    // ======================
+    const searchForm = document.getElementById('search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const params = new URLSearchParams(formData).toString();
+            window.location.href = `{{ url_for('goods') }}?${params}`;
+        });
+    }
+
+    // ======================
+    // КОНТАКТНАЯ ФОРМА
+    // ======================
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {
         contactForm.addEventListener('submit', handleFormSubmit);
     }
 
-    // Инициализация карты
+    // ======================
+    // ИНИЦИАЛИЗАЦИЯ КАРТЫ
+    // ======================
     if (typeof initMap === 'function' && document.getElementById('map')) {
         const mapElement = document.getElementById('map');
         const center = JSON.parse(mapElement.dataset.center);
         const logoPath = mapElement.dataset.logo;
         initMap(center, 16, 'map', logoPath);
+    }
+
+    // ======================
+    // КНОПКА ВХОДА
+    // ======================
+    const registerBtn = document.querySelector('.btn-primary');
+    if (registerBtn && registerBtn.textContent.includes('Войти')) {
+        registerBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = "/login";
+        });
     }
 
     // ======================
@@ -52,9 +94,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Обработчик для кнопок "В корзину" на странице товаров
+    // Обработчик для кнопок "В корзину"
     function setupAddToCartButtons() {
-        const cartForms = document.querySelectorAll('form[action*="/add_to_cart"]');
+        const cartForms = document.querySelectorAll('form[action*="/add_to_cart"], .add-to-cart-form');
         cartForms.forEach(form => {
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -65,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token() }}' // CSRF-токен для защиты
+                            'X-CSRFToken': '{{ csrf_token() }}'
                         },
                         body: JSON.stringify(Object.fromEntries(formData))
                     });
@@ -74,10 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const result = await response.json();
                     if (result.success) {
-                        // Обновляем счетчик
                         updateCartCounter(result.cart_count);
-
-                        // Показываем уведомление
                         showNotification(result.message, 'success');
                     } else {
                         showNotification(result.message, 'error');
@@ -90,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Обработчик для изменения количества товара в корзине (плюс/минус)
+    // Обработчик изменения количества товара
     function setupQuantityControls() {
         document.querySelectorAll('.quantity-control form').forEach(form => {
             form.addEventListener('submit', async function(e) {
@@ -112,8 +151,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
 
                     if (!response.ok) throw new Error('Network response was not ok');
-
-                    // Перезагружаем страницу корзины для обновления данных
                     window.location.reload();
                 } catch (error) {
                     console.error('Error updating cart:', error);
@@ -123,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Обработчик для оформления заказа
+    // Обработчик оформления заказа
     function setupCheckoutButton() {
         const checkoutForm = document.getElementById('checkout-form');
         if (checkoutForm) {
@@ -144,7 +181,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const result = await response.json();
                     if (result.success) {
                         showNotification(result.message, 'success');
-                        // Перенаправляем на страницу заказов через 2 секунды
                         setTimeout(() => {
                             window.location.href = '/orders';
                         }, 2000);
@@ -161,39 +197,110 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Инициализация функционала корзины
     function initCartFunctionality() {
-        // Получаем количество товаров в корзине при загрузке
         fetchCartCount();
 
-        // Настраиваем кнопки добавления в корзину
-        if (document.querySelector('form[action*="/add_to_cart"]')) {
+        if (document.querySelector('form[action*="/add_to_cart"], .add-to-cart-form')) {
             setupAddToCartButtons();
         }
 
-        // Настраиваем элементы управления количеством в корзине
         if (document.querySelector('.quantity-control form')) {
             setupQuantityControls();
         }
 
-        // Настраиваем кнопку оформления заказа
         if (document.getElementById('checkout-form')) {
             setupCheckoutButton();
         }
     }
 
-    // Запускаем инициализацию корзины
+    // Запуск инициализации корзины
     initCartFunctionality();
+
+    // ======================
+    // МОДАЛЬНОЕ ОКНО НАЗНАЧЕНИЯ СОТРУДНИКОВ
+    // ======================
+    const assignModalElement = document.getElementById('assignEmployeesModal');
+    const assignForm = document.getElementById('assignEmployeesForm');
+
+    // Инициализация только если элементы существуют на странице
+    if (assignModalElement && assignForm) {
+        const assignModal = new bootstrap.Modal(assignModalElement);
+
+        // Обработчики для кнопок назначения сотрудников
+        document.querySelectorAll('.btn-edit-assignees').forEach(button => {
+            button.addEventListener('click', function() {
+                const orderId = this.getAttribute('data-order-id');
+                const assemblerId = this.getAttribute('data-assembler-id');
+                const courierId = this.getAttribute('data-courier-id');
+
+                // Заполняем форму текущими значениями
+                document.getElementById('orderId').value = orderId;
+                document.getElementById('assemblerSelect').value = assemblerId || '';
+                document.getElementById('courierSelect').value = courierId || '';
+
+                // Показываем модальное окно
+                assignModal.show();
+            });
+        });
+
+        // Обработка отправки формы
+        assignForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Отправка данных на сервер
+            fetch("{{ url_for('update_order_assignees') }}", {
+                method: 'POST',
+                body: new FormData(this),
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Закрываем модальное окно и обновляем страницу
+                    assignModal.hide();
+                    showNotification('Назначения успешно обновлены!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification('Ошибка при обновлении: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Произошла ошибка при отправке данных', 'error');
+            });
+        });
+    }
+
+    // ======================
+    // ДОПОЛНИТЕЛЬНЫЕ СТИЛИ
+    // ======================
+    // Добавляем CSS для анимации уведомлений
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
 });
 
+// ======================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ======================
+
+/**
+ * Обработчик отправки контактной формы
+ * @param {Event} event - Событие отправки формы
+ */
 async function handleFormSubmit(event) {
     event.preventDefault();
     const form = event.target;
 
     try {
-        // Собираем данные формы
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
-
-        console.log('Отправляемые данные:', data);
 
         const response = await fetch('/send_contact_form', {
             method: 'POST',
@@ -220,23 +327,24 @@ async function handleFormSubmit(event) {
     }
 }
 
+/**
+ * Показывает уведомление
+ * @param {string} message - Текст сообщения
+ * @param {string} type - Тип уведомления (success/error)
+ */
 function showNotification(message, type) {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
 
-    // Создаем иконку в зависимости от типа уведомления
     const icon = document.createElement('i');
     icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
 
-    // Создаем текстовый элемент
     const text = document.createElement('span');
     text.textContent = message;
 
-    // Собираем уведомление
     notification.appendChild(icon);
     notification.appendChild(text);
 
-    // Стилизация уведомления
     Object.assign(notification.style, {
         position: 'fixed',
         top: '20px',
@@ -256,86 +364,9 @@ function showNotification(message, type) {
 
     document.body.appendChild(notification);
 
-    // Добавляем анимацию исчезновения
     setTimeout(() => {
         notification.style.opacity = '0';
         notification.style.transition = 'opacity 0.3s ease';
         setTimeout(() => notification.remove(), 300);
     }, 5000);
 }
-
-// Код, выполняемый после полной загрузки DOM
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("DOM полностью загружен");
-
-    // ======================
-    // Мобильное меню
-    // ======================
-    const menuToggle = document.getElementById('menuToggle');
-    const navMenu = document.getElementById('navMenu');
-
-    if (menuToggle && navMenu) {
-        // Переключение видимости мобильного меню
-        menuToggle.addEventListener('click', function() {
-            navMenu.classList.toggle('active');
-            console.log("Мобильное меню переключено");
-        });
-
-        // Закрытие меню при клике на пункт
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function() {
-                if (navMenu.classList.contains('active')) {
-                    navMenu.classList.remove('active');
-                    console.log("Мобильное меню закрыто");
-                }
-            });
-        });
-    }
-
-    // ======================
-    // Обработка кнопки входа
-    // ======================
-    const registerBtn = document.querySelector('.btn-primary');
-    if (registerBtn && registerBtn.textContent.includes('Войти')) {
-        registerBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log("Перенаправление на страницу входа");
-            window.location.href = "/login";
-        });
-    }
-
-    // ======================
-    // Инициализация карты
-    // ======================
-    if (typeof initMap === 'function' && document.getElementById('map')) {
-        console.log("Инициализация карты");
-        const mapElement = document.getElementById('map');
-        const center = JSON.parse(mapElement.dataset.center);
-        const logoPath = mapElement.dataset.logo;
-
-        initMap(center, 16, 'map', logoPath);
-    }
-
-    // ======================
-    // Дополнительная отладка
-    // ======================
-    // Проверяем, что форма существует и обработчик назначен
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        console.log("Контактная форма найдена");
-        // Дублируем обработчик для отладки
-        contactForm.addEventListener('submit', handleFormSubmit);
-    } else {
-        console.warn("Контактная форма не найдена");
-    }
-
-    // Добавляем CSS для анимации уведомлений
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-    `;
-    document.head.appendChild(style);
-});

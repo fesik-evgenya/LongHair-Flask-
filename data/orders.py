@@ -28,11 +28,13 @@ class Order(SqlAlchemyBase):
     order_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     order_number = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=False)  # номер заказа
     status = sqlalchemy.Column(sqlalchemy.String, default='создан')  # статус заказа
-    assembler_id = sqlalchemy.Column(sqlalchemy.Integer)  # ID сборщика
-    courier_id = sqlalchemy.Column(sqlalchemy.Integer)  # ID курьера
+    assembler_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('employees.id'))  # ID сборщика
+    courier_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('employees.id'))  # ID курьера
 
-    user = orm.relationship('Customer', back_populates='orders') # Связь с пользователем
+    user = orm.relationship('Customer', back_populates='orders')  # Связь с пользователем
     product = orm.relationship('Product', back_populates='orders')  # Связь с продуктом
+    assembler = orm.relationship('Employee', foreign_keys=[assembler_id], back_populates="assembled_orders")  # Связь со сборщиком
+    courier = orm.relationship('Employee', foreign_keys=[courier_id], back_populates="delivered_orders")  # Связь с курьером
 
 
 class CartItem(SqlAlchemyBase):

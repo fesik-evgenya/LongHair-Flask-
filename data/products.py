@@ -1,6 +1,5 @@
 import sqlalchemy
 from sqlalchemy import orm
-
 from .db_session import SqlAlchemyBase
 
 
@@ -19,6 +18,7 @@ class Product(SqlAlchemyBase):
     retail_vat_amount = sqlalchemy.Column(sqlalchemy.Float, nullable=False)  # НДС розничная
     retail_price_with_vat = sqlalchemy.Column(sqlalchemy.Float, nullable=False)  # розничная цена с НДС
     image_url = sqlalchemy.Column(sqlalchemy.String)  # ссылка на изображение
+    description = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # описание товара для каталога
     supplier_id = sqlalchemy.Column(sqlalchemy.Integer)  # ID поставщика
     supplier_name = sqlalchemy.Column(sqlalchemy.String)  # наименование поставщика
     supplier_type = sqlalchemy.Column(sqlalchemy.String)  # организационная форма

@@ -1,9 +1,14 @@
+import os
+
 from flask import Flask, url_for, request, render_template, redirect, flash, jsonify
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect, validate_csrf
 import datetime  # Добавлен импорт datetime
+from math import ceil
+
+from werkzeug.utils import secure_filename
 
 from data import db_session
 from data.customers import Customer
@@ -13,6 +18,8 @@ from forms.loginform import LoginForm
 from forms.product import ProductForm
 from forms.user import Register
 from forms.editprofile import EditProfileForm
+from data.employees import Employee
+from forms.employee import EmployeeForm
 from notifications.send_mail import send_mail
 
 # Регистрируем приложение Flask
@@ -22,9 +29,15 @@ app = Flask(__name__)
 app.secret_key = 'Tdutif_85'
 csrf = CSRFProtect(app)
 
-# Разрешенные расширения для загрузки файлов
-ALLOWED_EXTENSIONS = ['txt', 'pdf', 'zip', 'jpg', 'png']
+# конфигурации
+app.config['UPLOAD_FOLDER'] = 'static/images/goods'
+app.config['ALLOWED_EXTENSIONS'] = {'webp'}
 debug = True  # Режим отладки (True для разработки, False для продакшена)
+
+# проверяем загружаемый файл на расширение
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 # Инициализация Flask-Login
 login_manager = LoginManager()
@@ -35,9 +48,8 @@ login_manager.login_view = 'login'  # Страница для входа
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,  # Автоматически определяет IP
-    default_limits=["5 per minute"]
+    default_limits=["50 per minute"]
 )
-
 
 # Загрузчик пользователей для Flask-Login
 @login_manager.user_loader
@@ -69,8 +81,80 @@ def about():
 # Страница товаров
 @app.route('/goods')
 def goods():
+    page = request.args.get('page', 1, type=int)
+    per_page = 6  # Количество товаров на странице
+
+    search_query = request.args.get('search', '').strip()
+    category_filter = request.args.get('category', '').strip()
+
     db_sess = db_session.create_session()
-    products = db_sess.query(Product).all()
+    query = db_sess.query(Product)
+
+    # Применяем фильтры
+    if search_query:
+        query = query.filter(Product.name.ilike(f'%{search_query}%'))
+    if category_filter:
+        query = query.filter(Product.category == category_filter)
+
+    # Ручная реализация пагинации
+    total_items = query.count()
+    total_pages = ceil(total_items / per_page)
+    offset = (page - 1) * per_page
+    items = query.offset(offset).limit(per_page).all()
+
+    # Создаем объект пагинации для шаблона
+    class Pagination:
+        def __init__(self, page, per_page, total_items, items):
+            self.page = page
+            self.per_page = per_page
+            self.total = total_items
+            self.items = items
+            self.pages = total_pages
+
+        @property
+        def has_prev(self):
+            return self.page > 1
+
+        @property
+        def has_next(self):
+            return self.page < self.pages
+
+        @property
+        def prev_num(self):
+            return self.page - 1 if self.has_prev else None
+
+        @property
+        def next_num(self):
+            return self.page + 1 if self.has_next else None
+
+        def iter_pages(self, left_edge=1, right_edge=1, left_current=1, right_current=2):
+            left_start = 1
+            left_end = min(left_edge, self.pages)
+
+            right_start = max(self.pages - right_edge + 1, 1)
+            right_end = self.pages
+
+            current_start = max(self.page - left_current, 1)
+            current_end = min(self.page + right_current, self.pages)
+
+            pages = set()
+            # Добавляем левый блок
+            pages.update(range(left_start, left_end + 1))
+            # Добавляем правый блок
+            pages.update(range(right_start, right_end + 1))
+            # Добавляем текущий блок
+            pages.update(range(current_start, current_end + 1))
+
+            sorted_pages = sorted(pages)
+            prev_page = 0
+            for page_num in sorted_pages:
+                if page_num - prev_page > 1:
+                    yield None  # Генератор для многоточия
+                yield page_num
+                prev_page = page_num
+
+    products = Pagination(page, per_page, total_items, items)
+
     return render_template(
         'goods.html',
         title="Район {Фруктовый} | Товары",
@@ -109,6 +193,7 @@ def contacts():
 
 # Страница входа
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("20 per minute")
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -136,6 +221,7 @@ def logout():
 
 # Страница регистрации
 @app.route('/register', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def register():
     form = Register()
     if form.validate_on_submit():
@@ -201,7 +287,7 @@ def user_orders():
 @login_required
 def admin_panel():
     # Проверка прав администратора (status=3)
-    if current_user.status != 3:
+    if current_user.status != 4 or current_user.status != 5:
         flash('Доступ запрещен: недостаточно прав', 'danger')
         return redirect('/')
 
@@ -223,7 +309,7 @@ def admin_panel():
 @app.route('/admin/products/add', methods=['GET', 'POST'])
 @login_required
 def add_product():
-    if current_user.status != 3:
+    if current_user.status < 4:
         flash('Доступ запрещен: недостаточно прав', 'danger')
         return redirect('/')
 
@@ -232,6 +318,17 @@ def add_product():
     if form.validate_on_submit():
         try:
             db_sess = db_session.create_session()
+
+            # Обработка загрузки изображения
+            image_url = None
+            if form.image.data:
+                file = form.image.data
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(filepath)
+                    image_url = url_for('static', filename=f'images/goods/{filename}')
 
             # Расчеты цен
             vat_amount = form.purchase_price_without_vat.data * (form.vat_percent.data / 100)
@@ -244,7 +341,7 @@ def add_product():
             product = Product(
                 name=form.name.data,
                 unit=form.unit.data,
-                category=form.category.data,  # Добавлена категория
+                category=form.category.data,
                 purchase_price_without_vat=form.purchase_price_without_vat.data,
                 vat_percent=form.vat_percent.data,
                 vat_amount=vat_amount,
@@ -252,7 +349,8 @@ def add_product():
                 retail_price_without_vat=form.retail_price_without_vat.data,
                 retail_vat_amount=retail_vat_amount,
                 retail_price_with_vat=retail_price_with_vat,
-                image_url=form.image_url.data,
+                image_url=image_url,
+                description=form.description.data,
                 supplier_id=form.supplier_id.data,
                 supplier_name=form.supplier_name.data,
                 supplier_type=form.supplier_type.data
@@ -274,6 +372,96 @@ def add_product():
                 flash(f'Ошибка в поле "{getattr(form, field).label.text}": {error}', 'danger')
 
     return render_template('add_product.html', title='Добавить товар', form=form)
+
+
+@app.route('/admin/employees')
+@login_required
+def list_employees():
+    if current_user.status != 4 or current_user.status != 5:
+        flash('Доступ запрещен', 'danger')
+        return redirect('/')
+
+    db_sess = db_session.create_session()
+    employees = db_sess.query(Employee).all()
+    return render_template('employees.html',
+                           title='Управление сотрудниками',
+                           employees=employees)
+
+
+# Добавление сотрудника
+@app.route('/admin/employees/add', methods=['GET', 'POST'])
+@login_required
+def add_employee():
+    if current_user.status != 4 or current_user.status != 5:
+        flash('Доступ запрещен', 'danger')
+        return redirect('/')
+
+    form = EmployeeForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        employee = Employee(
+            name=form.name.data,
+            position=form.position.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            status=form.status.data
+        )
+        db_sess.add(employee)
+        db_sess.commit()
+        flash('Сотрудник добавлен', 'success')
+        return redirect(url_for('list_employees'))
+    return render_template('add_employee.html',
+                           title='Добавить сотрудника',
+                           form=form)
+
+
+# Редактирование сотрудника (только для админа)
+@app.route('/admin/employees/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_employee(id):
+    if current_user.status != 4 or current_user.status != 5:
+        flash('Доступ запрещен', 'danger')
+        return redirect('/')
+
+    db_sess = db_session.create_session()
+    employee = db_sess.query(Employee).get(id)
+
+    if not employee:
+        flash('Сотрудник не найден', 'danger')
+        return redirect(url_for('list_employees'))
+
+    form = EmployeeForm(obj=employee)
+    if form.validate_on_submit():
+        employee.name = form.name.data
+        employee.position = form.position.data
+        employee.email = form.email.data
+        employee.phone = form.phone.data
+        employee.status = form.status.data
+        db_sess.commit()
+        flash('Изменения сохранены', 'success')
+        return redirect(url_for('list_employees'))
+    return render_template('edit_employee.html',
+                           title='Редактировать сотрудника',
+                           form=form,
+                           employee=employee)
+
+
+# Удаление сотрудника
+@app.route('/admin/employees/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_employee(id):
+    if current_user.status != 4 or current_user.status != 5:
+        flash('Доступ запрещен', 'danger')
+        return redirect('/')
+
+    db_sess = db_session.create_session()
+    employee = db_sess.query(Employee).get(id)
+
+    if employee:
+        db_sess.delete(employee)
+        db_sess.commit()
+        flash('Сотрудник удален', 'success')
+    return redirect(url_for('list_employees'))
 
 
 # отправляем с сайта(раздел контакты) письмо на центральную корп. почту
@@ -355,7 +543,7 @@ app.jinja_env.filters['status_badge_class'] = status_to_badge_class
 @login_required
 def active_orders():
     # Проверка прав администратора (status=3)
-    if current_user.status != 3:
+    if current_user.status != 4 or current_user.status != 5:
         flash('Доступ запрещен: недостаточно прав', 'danger')
         return redirect('/')
 
@@ -537,6 +725,40 @@ def checkout():
 if __name__ == '__main__':
     # Инициализация базы данных
     db_session.global_init('db/shop.db')  # Путь к файлу базы данных
+
+    # # Создаем сессию для работы с БД
+    # db_sess = db_session.create_session()
+    #
+    # # Импортируем необходимые модели
+    # from data.loyalty import LoyaltyLevel
+    # from data.customers import Customer
+    #
+    # # Проверяем и создаем начальные данные, если их нет
+    # # Создаем уровни лояльности, если их нет
+    # if not db_sess.query(LoyaltyLevel).first():
+    #     levels = [
+    #         LoyaltyLevel(id=0, level_name="Базовый", discount=0.0, min_purchases=0, min_total=0),
+    #         LoyaltyLevel(id=1, level_name="Серебряный", discount=5.0, min_purchases=10, min_total=5000),
+    #         LoyaltyLevel(id=2, level_name="Золотой", discount=10.0, min_purchases=30, min_total=15000),
+    #         LoyaltyLevel(id=3, level_name="Администратор", discount=0.0, min_purchases=0, min_total=0)
+    #     ]
+    #     db_sess.add_all(levels)
+    #     db_sess.commit()
+    #
+    # # Создаем администратора, если его нет
+    # if not db_sess.query(Customer).filter(Customer.email == 'admin@example.com').first():
+    #     admin = Customer(
+    #         name="Администратор",
+    #         email="admin@example.com",
+    #         phone="+7(999)999-99-99",
+    #         street="Административная",
+    #         building="1",
+    #         status=4,  # Статус администратора
+    #         loyalty_level=4  # Уровень лояльности "Администратор"
+    #     )
+    #     admin.set_password("Tdutif_85")
+    #     db_sess.add(admin)
+    #     db_sess.commit()
 
     # Запуск приложения
     app.run(host='localhost', port=5000, debug=debug)

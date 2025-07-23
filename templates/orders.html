@@ -1,9 +1,10 @@
+<!-- orders.html -->
 {% extends "base.html" %}
 
 {% block content %}
 <section class="orders-section">
     <h2 class="section-title">История заказов</h2>
-    
+
     {% if orders %}
         <div class="orders-list">
             {% for order in orders %}
@@ -15,7 +16,7 @@
                         {{ order.status }}
                     </div>
                 </div>
-                
+
                 <div class="order-details">
                     <div class="order-products">
                         <p><strong>Товары:</strong></p>
@@ -24,17 +25,37 @@
                             <!-- Дополнительные товары могут быть добавлены здесь -->
                         </ul>
                     </div>
-                    
+
                     <div class="order-summary">
                         <p><strong>Сумма заказа:</strong> {{ order.total_price }} руб.</p>
                         <p><strong>Скидка:</strong> {{ order.discount * 100 }}%</p>
                         <p><strong>Итого:</strong> {{ order.discounted_price }} руб.</p>
                     </div>
+
+                    <!-- ДОБАВЛЕНО: информация о сотрудниках -->
+                    <div class="order-assignees">
+                        {% if order.assembler %}
+                        <p><strong>Сборщик:</strong> {{ order.assembler.name }} ({{ order.assembler.position }})</p>
+                        {% endif %}
+                        {% if order.courier %}
+                        <p><strong>Курьер:</strong> {{ order.courier.name }} ({{ order.courier.position }})</p>
+                        {% endif %}
+                    </div>
                 </div>
-                
+
                 <div class="order-actions">
                     <a href="#" class="btn btn-small">Повторить заказ</a>
                     <a href="#" class="btn btn-small">Подробнее</a>
+
+                    <!-- ДОБАВЛЕНО: кнопка для изменения назначения сотрудников -->
+                    {% if current_user.status == 3 %}
+                    <button class="btn btn-small btn-edit-assignees"
+                            data-order-id="{{ order.id }}"
+                            data-assembler-id="{{ order.assembler_id }}"
+                            data-courier-id="{{ order.courier_id }}">
+                        Назначить сотрудников
+                    </button>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -48,13 +69,47 @@
         </div>
     {% endif %}
 </section>
+
+<!-- ДОБАВЛЕНО: модальное окно для назначения сотрудников -->
+<div class="modal fade" id="assignEmployeesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Назначить сотрудников</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="assignEmployeesForm" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="order_id" id="orderId">
+
+                    <div class="mb-3">
+                        <label for="assemblerSelect" class="form-label">Сборщик</label>
+                        <select class="form-select" id="assemblerSelect" name="assembler_id">
+                            <option value="">Не назначен</option>
+                            {% for employee in employees %}
+                                <option value="{{ employee.id }}">{{ employee.name }} ({{ employee.position }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="courierSelect" class="form-label">Курьер</label>
+                        <select class="form-select" id="courierSelect" name="courier_id">
+                            <option value="">Не назначен</option>
+                            {% for employee in employees %}
+                                <option value="{{ employee.id }}">{{ employee.name }} ({{ employee.position }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
-{% block page_scripts %}
-<script>
-    // Функционал для работы с заказами
-    document.addEventListener('DOMContentLoaded', function() {
-        // Добавить потом код для фильтрации заказов!!!
-    });
-</script>
 {% endblock %}
