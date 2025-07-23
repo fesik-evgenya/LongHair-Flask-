@@ -26,6 +26,9 @@
                 <li><a href="{{ url_for('contacts') }}" class="nav-link">Контакты</a></li>
                 {% if current_user and current_user.is_authenticated %}
                 <li class="user-zone">
+                    <a href="/cart" class="user-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </a>
                     <span class="user-greeting">{{ current_user.name }}</span>
                     <div class="user-actions">
                         <a href="/profile" class="user-icon">
@@ -38,6 +41,10 @@
                 </li>
                 {% else %}
                 <li class="user-zone">
+                    <a href="/cart" class="user-icon cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-counter" style="display: none;">0</span>
+                    </a>
                     <div class="user-actions">
                         <a href="/login" class="btn btn-outline btn-sm">Войти</a>
                         <a href="/register" class="btn btn-primary btn-sm">Регистрация</a>

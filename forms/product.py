@@ -4,6 +4,8 @@ from wtforms.validators import DataRequired, NumberRange, URL, Optional
 
 class ProductForm(FlaskForm):
     name = StringField('Название товара', validators=[DataRequired()])
+    category = StringField('Категория товара', validators=[DataRequired()],
+                           render_kw={"placeholder": "овощи, фрукты, орехи ..."})
     unit = StringField('Единица измерения', validators=[DataRequired()])
     purchase_price_without_vat = FloatField('Закупочная цена без НДС',
                                            validators=[DataRequired(), NumberRange(min=0)])

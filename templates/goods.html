@@ -1,76 +1,29 @@
-{% extends "base.html"%}
+{% extends "base.html" %}
 
 {% block content %}
 <section id="products" class="page">
     <h2 class="section-title">Наши товары</h2>
     <div class="products-grid">
+        {% for product in products %}
         <div class="product-card">
             <div class="product-image"
-                 style="background-image: url({{url_for('static', filename='./images/goods/apples.webp')}})"></div>
+                 style="background-image: url({{ product.image_url or url_for('static', filename='images/goods/default.webp') }})"></div>
             <div class="product-info">
-                <h3 class="product-title">Свежие яблоки</h3>
-                <p class="product-description">Сочные яблоки сорта Голден, выращенные в экологически чистых
-                    условиях.</p>
-                <div class="product-price">129 ₽/кг</div>
-                <button class="btn">В корзину</button>
-            </div>
-        </div>
+                <h3 class="product-title">{{ product.name }}</h3>
+                <p class="product-description">{{ product.description or "Свежий и качественный продукт" }}</p>
+                <div class="product-price">{{ product.retail_price_with_vat|round(2) }} ₽/{{ product.unit }}</div>
 
-        <div class="product-card">
-            <div class="product-image"
-                 style="background-image: url({{url_for('static', filename='./images/goods/tomatoes.webp')}})"></div>
-            <div class="product-info">
-                <h3 class="product-title">Спелые помидоры</h3>
-                <p class="product-description">Ароматные помидоры черри с местной теплицы, идеальны для салатов.</p>
-                <div class="product-price">189 ₽/кг</div>
-                <button class="btn">В корзину</button>
+                <!-- Форма для добавления в корзину -->
+                <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}">
+                    <button type="submit" class="btn">В корзину</button>
+                </form>
             </div>
         </div>
-
-        <div class="product-card">
-            <div class="product-image"
-                 style="background-image: url({{url_for('static', filename='./images/goods/strawberry.webp')}})"></div>
-            <div class="product-info">
-                <h3 class="product-title">Сладкая клубника</h3>
-                <p class="product-description">Свежая клубника, собранная сегодня утром. Невероятно сладкая и
-                    ароматная.</p>
-                <div class="product-price">299 ₽/кг</div>
-                <button class="btn">В корзину</button>
-            </div>
+        {% else %}
+        <div class="no-products">
+            <p>Товары временно отсутствуют</p>
         </div>
-
-        <div class="product-card">
-            <div class="product-image"
-                 style="background-image: url({{url_for('static', filename='./images/goods/carrot.webp')}})"></div>
-            <div class="product-info">
-                <h3 class="product-title">Молодая морковь</h3>
-                <p class="product-description">Хрустящая молодая морковь, богатая витаминами и минералами.</p>
-                <div class="product-price">89 ₽/кг</div>
-                <button class="btn">В корзину</button>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-image"
-                 style="background-image: url({{url_for('static', filename='./images/goods/watermelon.webp')}})"></div>
-            <div class="product-info">
-                <h3 class="product-title">Арбузы</h3>
-                <p class="product-description">Спелые сочные арбузы сорта "Кримсон Свит". Гарантия сладости!</p>
-                <div class="product-price">49 ₽/кг</div>
-                <button class="btn">В корзину</button>
-            </div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-image"
-                 style="background-image: url({{url_for('static', filename='./images/goods/avocado.webp')}})"></div>
-            <div class="product-info">
-                <h3 class="product-title">Авокадо</h3>
-                <p class="product-description">Спелые авокадо Хасс, идеальные для тостов и салатов.</p>
-                <div class="product-price">149 ₽/шт</div>
-                <button class="btn">В корзину</button>
-            </div>
-        </div>
+        {% endfor %}
     </div>
 </section>
 {% endblock %}

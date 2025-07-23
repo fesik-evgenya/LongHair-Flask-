@@ -7,17 +7,17 @@
         <h2 class="section-title">Ваш профиль</h2>
         <div class="user-status">
             {% if user.status == 0 %}
-                <span class="badge badge-basic">Базовый клиент</span>
+                <span class="badge badge-basic">Базовый уровень</span>
             {% elif user.status == 1 %}
-                <span class="badge badge-silver">Серебряный клиент</span>
+                <span class="badge badge-silver">Серебряный уровень</span>
             {% elif user.status == 2 %}
-                <span class="badge badge-gold">Золотой клиент</span>
+                <span class="badge badge-gold">Золотой уровень</span>
             {% elif user.status == 3 %}
                 <span class="badge badge-admin">Администратор</span>
             {% endif %}
         </div>
     </div>
-    
+
     <!-- Информационная панель -->
     <div class="profile-info">
         <div class="info-card">
@@ -31,7 +31,7 @@
                 <p><strong>Телефон:</strong> {{ user.phone }}</p>
             </div>
         </div>
-        
+
         <div class="info-card">
             <div class="info-header">
                 <i class="fas fa-home"></i>
@@ -43,7 +43,29 @@
                 <p>Этаж: {{ user.floor or '-' }}, Кв: {{ user.apartment or '-' }}</p>
             </div>
         </div>
-        
+
+        <!-- Блок для администратора -->
+        {% if user.status == 3 %}
+        <div class="info-card">
+            <div class="info-header">
+                <i class="fas fa-database"></i>
+                <h3>База данных</h3>
+            </div>
+            <div class="info-content">
+                <div class="admin-actions-column">
+                    <a href="{{ url_for('add_product') }}" class="btn btn-admin-action">
+                        <i class="fas fa-plus-circle"></i> Внести номенклатуру
+                    </a>
+                    <a href="#" class="btn btn-admin-action">
+                        <i class="fas fa-truck-loading"></i> Принять поставку
+                    </a>
+                    <a href="#" class="btn btn-admin-action">
+                        <i class="fas fa-search"></i> Поиск в базе
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
         <div class="info-card">
             <div class="info-header">
                 <i class="fas fa-percentage"></i>
@@ -65,15 +87,23 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
-    
+
     <!-- Действия -->
     <div class="profile-actions">
-        <a href="{{ url_for('user_orders') }}" class="btn btn-action">
-            <i class="fas fa-shopping-basket"></i> Мои заказы
-        </a>
-        <a href="#" class="btn btn-action">
-            <i class="fas fa-edit"></i> Редактировать профиль
+        {% if current_user.status == 3 %}
+            <a href="{{ url_for('active_orders') }}" class="btn btn-action">
+                <i class="fas fa-shopping-basket"></i> Активные заказы
+            </a>
+        {% else %}
+            <a href="{{ url_for('user_orders') }}" class="btn btn-action">
+                <i class="fas fa-shopping-basket"></i> Мои заказы
+            </a>
+        {% endif %}
+
+        <a href="{{ url_for('edit_profile') }}" class="btn btn-action">
+            <i class="fas fa-edit"></i> Редактировать
         </a>
         <a href="{{ url_for('logout') }}" class="btn btn-action logout">
             <i class="fas fa-sign-out-alt"></i> Выйти
@@ -81,12 +111,4 @@
     </div>
 </section>
 {% endblock %}
-
-{% block page_scripts %}
-<script>
-    // Дополнительные скрипты для профиля
-    document.addEventListener('DOMContentLoaded', function() {
-        // добавить потом функции для редактирования профиля!!!
-    });
-</script>
-{% endblock %}
+[file content end]

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="cart-section">
+    <h2 class="section-title">Ваша корзина</h2>
+    
+    {% if not cart_items %}
+        <div class="empty-cart">
+            <p>Ваша корзина пуста</p>
+            <a href="{{ url_for('goods') }}" class="btn">Вернуться к товарам</a>
+        </div>
+    {% else %}
+        <div class="cart-items">
+            {% for item in cart_items %}
+            <div class="cart-item">
+                <div class="product-image" 
+                     style="background-image: url('{{ item.product.image_url }}')"></div>
+                <div class="product-info">
+                    <h3>{{ item.product.name }}</h3>
+                    <p>{{ item.product.retail_price_with_vat }} ₽/{{ item.product.unit }}</p>
+                    
+                    <div class="quantity-control">
+                        <form method="post" action="{{ url_for('update_cart', item_id=item.id) }}">
+                            <button type="submit" name="action" value="decrement" class="btn-qty">-</button>
+                            <span>{{ item.quantity }} {{ item.product.unit }}</span>
+                            <button type="submit" name="action" value="increment" class="btn-qty">+</button>
+                        </form>
+                    </div>
+                    
+                    <p class="item-total">
+                        Итого: {{ (item.product.retail_price_with_vat * item.quantity)|round(2) }} ₽
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="cart-summary">
+            <h3>Общая сумма: {{ total|round(2) }} ₽</h3>
+            <form method="post" action="{{ url_for('checkout') }}">
+                <button type="submit" class="btn btn-primary">Оформить заказ</button>
+            </form>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

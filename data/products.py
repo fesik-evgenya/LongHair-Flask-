@@ -9,6 +9,7 @@ class Product(SqlAlchemyBase):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=False)  # наименование
+    category = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # категория товара
     unit = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # единица измерения
     purchase_price_without_vat = sqlalchemy.Column(sqlalchemy.Float, nullable=False)  # закупочная цена без НДС
     vat_percent = sqlalchemy.Column(sqlalchemy.Float, nullable=False)  # процент НДС
