@@ -660,7 +660,7 @@ textarea.form-control {
 /* ================ СЕКЦИИ ================ */
 .section-title {
     text-align: center;
-    margin: 0 0 1.5rem;
+    margin: 0;
     color: var(--primary-dark);
     font-size: 2.2rem;
     position: relative;
@@ -745,10 +745,10 @@ textarea.form-control {
 /* Стили для фильтра товаров */
 .products-filter {
     background: var(--white);
-    padding: 1.5rem;
+    padding: 1rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    margin-bottom: 2rem;
+    margin-top: 10px;
 }
 
 .filter-form {
@@ -785,23 +785,24 @@ textarea.form-control {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 2rem;
+    margin: 2rem auto;
     flex-wrap: wrap;
 }
 
 .pagination-link {
     display: inline-flex;
-    align-items: center;
+    align-items: base-line;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 60px;
+    height: 30px;
+    border-radius: 15px;
     background: var(--white);
     color: var(--primary-dark);
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 400;
     transition: all 0.3s ease;
     box-shadow: var(--shadow);
+
 }
 
 .pagination-link:hover {
@@ -896,14 +897,13 @@ textarea.form-control {
 .profile-section {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem;
 }
 
 .profile-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
 }
 
 .user-status .badge {
@@ -942,7 +942,7 @@ textarea.form-control {
 .info-card {
     background: var(--white);
     border-radius: var(--radius);
-    padding: 1.5rem;
+    padding: 1rem;
     box-shadow: var(--shadow);
 }
 
@@ -1211,6 +1211,28 @@ textarea.form-control {
     font-size: 1.2rem;
 }
 
+/* Стили для блока KPI */
+.info-card .info-content p {
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+}
+
+.info-card .info-content strong {
+    color: var(--primary-dark);
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Иконка для KPI */
+.fa-chart-line {
+    color: #4CAF50; /* Зеленый цвет для графиков */
+}
+
+/* Новая иконка для управления сотрудниками */
+.fa-users-cog:before {
+    content: "\f509"; /* Код иконки users-cog в FontAwesome */
+}
+
 /* Страница заказов */
 .orders-section {
     max-width: 1200px;
@@ -1332,8 +1354,8 @@ textarea.form-control {
 /* АДМИН-ПАНЕЛЬ */
 .admin-panel {
     max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1.5rem;
+    margin: 1rem auto;
+    padding: 0 1rem;
 }
 
 .section-title-container {
@@ -1352,14 +1374,15 @@ textarea.form-control {
 .admin-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
 .admin-section {
     background: var(--white);
     border-radius: var(--radius);
-    padding: 2rem;
-    margin-bottom: 2.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
     box-shadow: var(--shadow);
 }
 
@@ -1556,6 +1579,10 @@ footer {
 
 .footer__afterword-author {
     color: var(--dark-color);
+}
+
+.footer > a {
+    height: 35px;
 }
 
 /* ================ СТИЛИ ДЛЯ КАРТЫ ================ */
@@ -1960,7 +1987,6 @@ p, li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
 }
 
 .user-status .badge {

@@ -32,7 +32,7 @@
                         <p><strong>Итого:</strong> {{ order.discounted_price }} руб.</p>
                     </div>
 
-                    <!-- ДОБАВЛЕНО: информация о сотрудниках -->
+                    <!-- информация о сотрудниках -->
                     <div class="order-assignees">
                         {% if order.assembler %}
                         <p><strong>Сборщик:</strong> {{ order.assembler.name }} ({{ order.assembler.position }})</p>
@@ -47,8 +47,8 @@
                     <a href="#" class="btn btn-small">Повторить заказ</a>
                     <a href="#" class="btn btn-small">Подробнее</a>
 
-                    <!-- ДОБАВЛЕНО: кнопка для изменения назначения сотрудников -->
-                    {% if current_user.status == 3 %}
+                    <!-- кнопка для изменения назначения сотрудников -->
+                    {% if current_user.status in [4, 5] %}
                     <button class="btn btn-small btn-edit-assignees"
                             data-order-id="{{ order.id }}"
                             data-assembler-id="{{ order.assembler_id }}"
@@ -70,7 +70,7 @@
     {% endif %}
 </section>
 
-<!-- ДОБАВЛЕНО: модальное окно для назначения сотрудников -->
+<!-- модальное окно для назначения сотрудников -->
 <div class="modal fade" id="assignEmployeesModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -110,6 +110,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
 {% endblock %}

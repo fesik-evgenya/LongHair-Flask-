@@ -23,7 +23,7 @@ class Customer(SqlAlchemyBase, UserMixin):
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     create_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)  # дата регистрации клиента
     # связь с таблицей заказов
-    orders = orm.relationship("Order", back_populates='user')  # связь с таблицей заказов
+    orders = orm.relationship("Order", back_populates='customer')  # связь с таблицей заказов
     loyalty = orm.relationship("LoyaltyLevel")  # связь с таблицей уровней лояльности
 
     # кодируем пароль пользователя и отправляем в переменную

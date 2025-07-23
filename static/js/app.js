@@ -32,13 +32,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // ======================
     const searchForm = document.getElementById('search-form');
     if (searchForm) {
-        searchForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const params = new URLSearchParams(formData).toString();
-            window.location.href = `{{ url_for('goods') }}?${params}`;
-        });
-    }
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Получаем данные формы
+        const formData = new FormData(this);
+        const params = new URLSearchParams();
+
+        // Добавляем параметры
+        for (const [key, value] of formData.entries()) {
+            if (value) params.append(key, value);
+        }
+
+        // Перенаправляем с корректным URL
+        window.location.href = `${this.action}?${params.toString()}`;
+    });
+}
 
     // ======================
     // КОНТАКТНАЯ ФОРМА
@@ -94,40 +103,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Обработчик для кнопок "В корзину"
-    function setupAddToCartButtons() {
-        const cartForms = document.querySelectorAll('form[action*="/add_to_cart"], .add-to-cart-form');
-        cartForms.forEach(form => {
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
+// Обработчик для кнопок "В корзину"
+function setupAddToCartButtons() {
+    const cartForms = document.querySelectorAll('form[action*="/add_to_cart"], .add-to-cart-form');
+    cartForms.forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-                try {
-                    const formData = new FormData(this);
-                    const response = await fetch(this.action, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify(Object.fromEntries(formData))
-                    });
+            try {
+                // Создаем объект FormData из формы
+                const formData = new FormData(this);
 
-                    if (!response.ok) throw new Error('Network response was not ok');
+                // Добавляем CSRF-токен из мета-тега
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-                    const result = await response.json();
-                    if (result.success) {
-                        updateCartCounter(result.cart_count);
-                        showNotification(result.message, 'success');
-                    } else {
-                        showNotification(result.message, 'error');
-                    }
-                } catch (error) {
-                    console.error('Error adding to cart:', error);
-                    showNotification('Ошибка при добавлении в корзину', 'error');
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken  // Используем правильный заголовок
+                    },
+                    body: formData  // Отправляем FormData вместо JSON
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const result = await response.json();
+                if (result.success) {
+                    updateCartCounter(result.cart_count);
+                    showNotification(result.message, 'success');
+                } else {
+                    showNotification(result.message, 'error');
                 }
-            });
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                showNotification('Ошибка при добавлении в корзину', 'error');
+            }
         });
-    }
+    });
+}
 
     // Обработчик изменения количества товара
     function setupQuantityControls() {

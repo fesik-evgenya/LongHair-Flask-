@@ -18,11 +18,15 @@ class ProductForm(FlaskForm):
                          validators=[DataRequired()])
     unit = StringField('Единица измерения', validators=[DataRequired()])
     purchase_price_without_vat = FloatField('Закупочная цена без НДС',
-                                           validators=[DataRequired(), NumberRange(min=0)])
+                                           validators=[DataRequired(), NumberRange(min=0)],
+                                           render_kw={"type": "number", "step": "0.01", "min": "0"})
     vat_percent = FloatField('Процент НДС',
-                            validators=[DataRequired(), NumberRange(min=0, max=100)])
+                            validators=[DataRequired(), NumberRange(min=0, max=100)],
+                            render_kw={"type": "number", "step": "0.1", "min": "0", "max": "100"})
     retail_price_without_vat = FloatField('Розничная цена без НДС',
-                                         validators=[DataRequired(), NumberRange(min=0)])
+                                         validators=[DataRequired(), NumberRange(min=0)],
+                                         render_kw={"type": "number", "step": "0.01", "min": "0"})
+    # Важно: поле description должно быть объявлено
     description = TextAreaField('Описание товара', validators=[DataRequired()])
     image = FileField('Изображение товара',
                      validators=[FileAllowed(['webp'], 'Только WebP изображения!')])

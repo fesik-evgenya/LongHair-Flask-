@@ -31,7 +31,7 @@ class Order(SqlAlchemyBase):
     assembler_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('employees.id'))  # ID сборщика
     courier_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('employees.id'))  # ID курьера
 
-    user = orm.relationship('Customer', back_populates='orders')  # Связь с пользователем
+    customer = orm.relationship('Customer', back_populates='orders')  # Связь с пользователем
     product = orm.relationship('Product', back_populates='orders')  # Связь с продуктом
     assembler = orm.relationship('Employee', foreign_keys=[assembler_id], back_populates="assembled_orders")  # Связь со сборщиком
     courier = orm.relationship('Employee', foreign_keys=[courier_id], back_populates="delivered_orders")  # Связь с курьером

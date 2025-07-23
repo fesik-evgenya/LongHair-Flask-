@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shorcut icon" href="{{url_for('static', filename='./images/logo/favicon.svg')}}" type="image/svg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
@@ -97,11 +98,12 @@
         <div class="footer-col">
             <h3>Категории</h3>
             <ul class="footer-links">
-                <li><a href="#">Фрукты</a></li>
-                <li><a href="#">Овощи</a></li>
-                <li><a href="#">Ягоды</a></li>
-                <li><a href="#">Зелень</a></li>
-                <li><a href="#">Орехи и сухофрукты</a></li>
+                <li><a href="./goods?category=Фрукты">Фрукты</a></li>
+                <li><a href="./goods?category=Овощи">Овощи</a></li>
+                <li><a href="./goods?category=Ягоды">Ягоды</a></li>
+                <li><a href="./goods?category=Зелень">Зелень</a></li>
+                <li><a href="./goods?category=Орехи">Орехи</a></li>
+                <li><a href="./goods?category=Сухофрукты">Сухофрукты</a></li>
             </ul>
         </div>
 

@@ -3,30 +3,30 @@
 {% block content %}
 <section id="products" class="page">
     <div class="products-filter">
-        <form id="search-form" class="filter-form">
+        <form id="search-form" class="filter-form" action="{{ url_for('goods') }}">
             <div class="form-row">
                 <div class="form-group">
                     <input type="text" name="search" class="form-control" placeholder="Поиск по названию"
-                           value="{{ request.args.get('search', '') }}">
+                           value="{{ current_search or '' }}">
                 </div>
 
                 <div class="form-group">
                     <select name="category" class="form-control">
                         <option value="">Все категории</option>
-                        <option value="овощи" {% if request.args.get(
-                        'category') == 'овощи' %}selected{% endif %}>Овощи</option>
-                        <option value="фрукты" {% if request.args.get(
-                        'category') == 'фрукты' %}selected{% endif %}>Фрукты</option>
-                        <option value="ягоды" {% if request.args.get(
-                        'category') == 'ягоды' %}selected{% endif %}>Ягоды</option>
-                        <option value="сухофрукты" {% if request.args.get(
-                        'category') == 'сухофрукты' %}selected{% endif %}>Сухофрукты</option>
-                        <option value="орехи" {% if request.args.get(
-                        'category') == 'орехи' %}selected{% endif %}>Орехи</option>
-                        <option value="зелень" {% if request.args.get(
-                        'category') == 'зелень' %}selected{% endif %}>Зелень</option>
-                        <option value="грибы" {% if request.args.get(
-                        'category') == 'грибы' %}selected{% endif %}>Грибы</option>
+                        <option value="Овощи" {% if current_category==
+                        'Овощи' %}selected{% endif %}>Овощи</option>
+                        <option value="Фрукты" {% if current_category==
+                        'Фрукты' %}selected{% endif %}>Фрукты</option>
+                        <option value="Ягоды" {% if current_category==
+                        'Ягоды' %}selected{% endif %}>Ягоды</option>
+                        <option value="Сухофрукты" {% if current_category==
+                        'Сухофрукты' %}selected{% endif %}>Сухофрукты</option>
+                        <option value="Орехи" {% if current_category==
+                        'Орехи' %}selected{% endif %}>Орехи</option>
+                        <option value="Зелень" {% if current_category==
+                        'Зелень' %}selected{% endif %}>Зелень</option>
+                        <option value="Грибы" {% if current_category==
+                        'Грибы' %}selected{% endif %}>Грибы</option>
                     </select>
                 </div>
 
@@ -44,15 +44,19 @@
         <div class="product-card">
             <div class="product-badge">{{ product.category }}</div>
             <div class="product-image"
-                 style="background-image: url({{ product.image_url or url_for('static', filename='images/goods/default.webp') }})"></div>
+                 style="background-image: url({{ url_for('static',
+                                               filename=product.image_url.replace('static/',
+                                               '', 1) if product.image_url else url_for('static',
+                                                       filename='images/goods/default.webp')) }})"></div>
             <div class="product-info">
                 <h3 class="product-title">{{ product.name }}</h3>
                 <p class="product-description">{{ product.description or "Свежий и качественный продукт" }}</p>
                 <div class="product-price">{{ product.retail_price_with_vat|round(2) }} ₽/{{ product.unit }}</div>
 
-                <!-- Форма для добавления в корзину -->
+                <!-- Форма для добавления в корзину - добавлен CSRF-токен -->
                 <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}"
                       class="add-to-cart-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn">В корзину</button>
                 </form>
             </div>
@@ -67,7 +71,7 @@
     <!-- Пагинация -->
     <div class="pagination">
         {% if products.has_prev %}
-        <a href="{{ url_for('goods', page=products.prev_num, search=request.args.get('search'), category=request.args.get('category')) }}"
+        <a href="{{ url_for('goods', page=products.prev_num, search=current_search, category=current_category) }}"
            class="pagination-link">&laquo; Назад</a>
         {% endif %}
 
@@ -76,7 +80,7 @@
         {% if products.page == page_num %}
         <span class="pagination-link current">{{ page_num }}</span>
         {% else %}
-        <a href="{{ url_for('goods', page=page_num, search=request.args.get('search'), category=request.args.get('category')) }}"
+        <a href="{{ url_for('goods', page=page_num, search=current_search, category=current_category) }}"
            class="pagination-link">{{ page_num }}</a>
         {% endif %}
         {% else %}
@@ -85,7 +89,7 @@
         {% endfor %}
 
         {% if products.has_next %}
-        <a href="{{ url_for('goods', page=products.next_num, search=request.args.get('search'), category=request.args.get('category')) }}"
+        <a href="{{ url_for('goods', page=products.next_num, search=current_search, category=current_category) }}"
            class="pagination-link">Вперед &raquo;</a>
         {% endif %}
     </div>

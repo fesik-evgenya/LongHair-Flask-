@@ -4,7 +4,7 @@ from flask import Flask, url_for, request, render_template, redirect, flash, jso
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_wtf.csrf import CSRFProtect, validate_csrf
+from flask_wtf.csrf import CSRFProtect, validate_csrf, CSRFError
 import datetime  # Добавлен импорт datetime
 from math import ceil
 
@@ -98,13 +98,13 @@ def goods():
 
     # Ручная реализация пагинации
     total_items = query.count()
-    total_pages = ceil(total_items / per_page)
+    total_pages = ceil(total_items / per_page) if total_items > 0 else 1
     offset = (page - 1) * per_page
     items = query.offset(offset).limit(per_page).all()
 
     # Создаем объект пагинации для шаблона
     class Pagination:
-        def __init__(self, page, per_page, total_items, items):
+        def __init__(self, page, per_page, total_items, items, total_pages):
             self.page = page
             self.per_page = per_page
             self.total = total_items
@@ -128,6 +128,9 @@ def goods():
             return self.page + 1 if self.has_next else None
 
         def iter_pages(self, left_edge=1, right_edge=1, left_current=1, right_current=2):
+            if self.pages == 0:
+                return []
+
             left_start = 1
             left_end = min(left_edge, self.pages)
 
@@ -153,7 +156,7 @@ def goods():
                 yield page_num
                 prev_page = page_num
 
-    products = Pagination(page, per_page, total_items, items)
+    products = Pagination(page, per_page, total_items, items, total_pages)
 
     return render_template(
         'goods.html',
@@ -204,7 +207,14 @@ def login():
         # Проверка пароля
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
-            return redirect('/')  # Перенаправление на главную после входа
+
+            # # Перенаправляем администраторов в админ-панель
+            # if user.status in [4, 5]:
+            #     return redirect(url_for('admin_panel'))
+
+            # Всех пользователей перенаправляем в профиль
+            return redirect(url_for('profile'))
+
         return render_template('login.html',
                                message="Неправильный логин или пароль",
                                form=form)
@@ -286,8 +296,8 @@ def user_orders():
 @app.route('/admin')
 @login_required
 def admin_panel():
-    # Проверка прав администратора (status=3)
-    if current_user.status != 4 or current_user.status != 5:
+    # Проверка прав администратора (status=4 или 5)
+    if current_user.status not in [4, 5]:
         flash('Доступ запрещен: недостаточно прав', 'danger')
         return redirect('/')
 
@@ -305,11 +315,12 @@ def admin_panel():
                            products=products)
 
 
-# Страница добавления товара в базу (только для админов)
+# Страница добавления товара в базу (только для prime-админов (5 lvl)
 @app.route('/admin/products/add', methods=['GET', 'POST'])
 @login_required
 def add_product():
-    if current_user.status < 4:
+    # проверяем статус 5 (только для prime-администраторов)
+    if current_user.status != 5:
         flash('Доступ запрещен: недостаточно прав', 'danger')
         return redirect('/')
 
@@ -325,10 +336,17 @@ def add_product():
                 file = form.image.data
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
-                    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(filepath)
-                    image_url = url_for('static', filename=f'images/goods/{filename}')
+                    upload_path = app.config['UPLOAD_FOLDER']
+
+                    # Создаем папку если не существует
+                    os.makedirs(upload_path, exist_ok=True)
+
+                    # Сохраняем файл
+                    file_path = os.path.join(upload_path, filename)
+                    file.save(file_path)
+
+                    # Формируем относительный путь для БД
+                    image_url = f'static/images/goods/{filename}'
 
             # Расчеты цен
             vat_amount = form.purchase_price_without_vat.data * (form.vat_percent.data / 100)
@@ -377,7 +395,7 @@ def add_product():
 @app.route('/admin/employees')
 @login_required
 def list_employees():
-    if current_user.status != 4 or current_user.status != 5:
+    if current_user.status != 5:
         flash('Доступ запрещен', 'danger')
         return redirect('/')
 
@@ -392,7 +410,7 @@ def list_employees():
 @app.route('/admin/employees/add', methods=['GET', 'POST'])
 @login_required
 def add_employee():
-    if current_user.status != 4 or current_user.status != 5:
+    if current_user.status != 5:
         flash('Доступ запрещен', 'danger')
         return redirect('/')
 
@@ -415,11 +433,11 @@ def add_employee():
                            form=form)
 
 
-# Редактирование сотрудника (только для админа)
+# Редактирование сотрудника (только для Prime - админа(5 lvl))
 @app.route('/admin/employees/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_employee(id):
-    if current_user.status != 4 or current_user.status != 5:
+    if current_user.status != 5:
         flash('Доступ запрещен', 'danger')
         return redirect('/')
 
@@ -446,11 +464,12 @@ def edit_employee(id):
                            employee=employee)
 
 
+# Редактирование сотрудника (только для Prime - админа(5 lvl))
 # Удаление сотрудника
 @app.route('/admin/employees/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_employee(id):
-    if current_user.status != 4 or current_user.status != 5:
+    if current_user.status != 5:
         flash('Доступ запрещен', 'danger')
         return redirect('/')
 
@@ -543,7 +562,7 @@ app.jinja_env.filters['status_badge_class'] = status_to_badge_class
 @login_required
 def active_orders():
     # Проверка прав администратора (status=3)
-    if current_user.status != 4 or current_user.status != 5:
+    if current_user.status not in [4, 5]:
         flash('Доступ запрещен: недостаточно прав', 'danger')
         return redirect('/')
 
@@ -612,6 +631,24 @@ def edit_profile():
 @app.route('/add_to_cart/<int:product_id>', methods=['POST'])
 @login_required
 def add_to_cart(product_id):
+    try:
+        # Проверяем CSRF из заголовка
+        csrf_token = request.headers.get('X-CSRFToken')
+        if not csrf_token:
+            return jsonify({
+                'success': False,
+                'message': 'Отсутствует CSRF токен'
+            }), 400
+
+        validate_csrf(csrf_token)
+
+    except CSRFError as e:
+        app.logger.error(f"CSRF validation failed: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'Недействительный CSRF токен'
+        }), 400
+
     db_sess = db_session.create_session()
     # Проверяем есть ли уже товар в корзине
     cart_item = db_sess.query(CartItem).filter(
@@ -748,13 +785,13 @@ if __name__ == '__main__':
     # # Создаем администратора, если его нет
     # if not db_sess.query(Customer).filter(Customer.email == 'admin@example.com').first():
     #     admin = Customer(
-    #         name="Администратор",
-    #         email="admin@example.com",
-    #         phone="+7(999)999-99-99",
-    #         street="Административная",
-    #         building="1",
-    #         status=4,  # Статус администратора
-    #         loyalty_level=4  # Уровень лояльности "Администратор"
+    #         name="Prime",
+    #         email="ganef85@mail.ru",
+    #         phone="+7(950)012-40-11",
+    #         street="-",
+    #         building="-",
+    #         status=5,  # Статус администратора
+    #         loyalty_level=5  # Уровень лояльности "Prime"
     #     )
     #     admin.set_password("Tdutif_85")
     #     db_sess.add(admin)
