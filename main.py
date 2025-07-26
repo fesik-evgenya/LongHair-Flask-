@@ -1,5 +1,4 @@
 import os
-
 from flask import Flask, url_for, request, render_template, redirect, flash, jsonify
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_limiter import Limiter
@@ -24,6 +23,8 @@ from notifications.send_mail import send_mail
 
 # Регистрируем приложение Flask
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+db = SQLAlchemy(app)
 
 # Секретный ключ для сессий и защиты от CSRF
 app.secret_key = 'Tdutif_85'
