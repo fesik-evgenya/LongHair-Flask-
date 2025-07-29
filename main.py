@@ -3,16 +3,14 @@ from flask import Flask, url_for, request, render_template, redirect, flash, jso
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, validate_csrf, CSRFError
-import datetime  # Добавлен импорт datetime
+import datetime
 from math import ceil
-
 from werkzeug.utils import secure_filename
 
-from data import db_session
+# Импорты моделей и форм
 from data.customers import Customer
-from data.orders import Order, CartItem  # Добавлен CartItem
+from data.orders import Order, CartItem
 from data.products import Product
 from forms.loginform import LoginForm
 from forms.product import ProductForm
@@ -24,8 +22,12 @@ from notifications.send_mail import send_mail
 
 # Регистрируем приложение Flask
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-db = SQLAlchemy(app)
+
+# Конфигурация подключения к PostgreSQL на Render
+app.config[
+    'SQLALCHEMY_DATABASE_URI'] = 'postgresql://shop_admin:m74Tk1oMkdcAAHMdWDAvjwEA2yRDbY89@dpg-d24aac1r0fns73b02n7g-a/shop_qpjp'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 # Секретный ключ для сессий и защиты от CSRF
 app.secret_key = 'Tdutif_85'
@@ -46,7 +48,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # Страница для входа
 
-# Ограничение: 5 запросов в минуту с одного IP
+# Ограничение: 50 запросов в минуту с одного IP
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,  # Автоматически определяет IP
@@ -762,8 +764,8 @@ def checkout():
 
 # Главная функция запуска приложения
 if __name__ == '__main__':
-    # Инициализация базы данных
-    db_session.global_init('db/shop.db')  # Путь к файлу базы данных
+    # Инициализация базы данных с PostgreSQL
+    db_session.global_init(app.config['SQLALCHEMY_DATABASE_URI'])
 
     # # Создаем сессию для работы с БД
     # db_sess = db_session.create_session()
@@ -800,4 +802,7 @@ if __name__ == '__main__':
     #     db_sess.commit()
 
     # Запуск приложения
-    app.run(host='localhost', port=5000, debug=debug)
+    # app.run(host='localhost', port=5000, debug=debug)  #
+
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
