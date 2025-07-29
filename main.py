@@ -9,6 +9,7 @@ from math import ceil
 from werkzeug.utils import secure_filename
 
 # Импорты моделей и форм
+from data import db_session
 from data.customers import Customer
 from data.orders import Order, CartItem
 from data.products import Product
@@ -23,11 +24,14 @@ from notifications.send_mail import send_mail
 # Регистрируем приложение Flask
 app = Flask(__name__)
 
-# Конфигурация подключения к PostgreSQL на Render
-app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'postgresql://shop_admin:m74Tk1oMkdcAAHMdWDAvjwEA2yRDbY89@dpg-d24aac1r0fns73b02n7g-a/shop_qpjp'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Получаем строку подключения из переменных окружения или используем значение по умолчанию
+database_uri = os.environ.get('DATABASE_URL', 'sqlite:///db/shop.db')
 
+# Исправляем формат для PostgreSQL на Render
+if database_uri.startswith("postgres://"):
+    database_uri = database_uri.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
 
 # Секретный ключ для сессий и защиты от CSRF
 app.secret_key = 'Tdutif_85'

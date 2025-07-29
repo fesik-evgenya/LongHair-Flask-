@@ -10,7 +10,7 @@ __factory = None
 engine = None  # Глобальный объект движка
 
 
-def global_init(db_conn_str: str):
+def global_init(db_conn_str: str):  # Параметр правильно называется db_conn_str
     """Инициализация глобального подключения к базе данных"""
     global __factory, engine
 
@@ -23,22 +23,33 @@ def global_init(db_conn_str: str):
     print(f"Подключение к базе данных по адресу: {db_conn_str}")
 
     try:
-        # Создаем движок с настройками для PostgreSQL
-        engine = sa.create_engine(
-            db_conn_str,
-            echo=False,  # Отключаем вывод SQL в консоль (False для продакшена)
-            pool_pre_ping=True,  # Автоматическая проверка соединения перед использованием
-            pool_size=10,  # Размер пула соединений
-            max_overflow=20,  # Максимальное количество соединений сверх pool_size
-            pool_recycle=3600  # Пересоздавать соединения каждый час
-        )
+        # Автоматическое определение типа БД по строке подключения
+        if db_conn_str.startswith("postgresql://"):  # Исправлено: db_conn_str
+            # Настройки для PostgreSQL
+            engine = sa.create_engine(
+                db_conn_str,  # Исправлено: db_conn_str
+                echo=False,
+                pool_pre_ping=True,
+                pool_size=10,
+                max_overflow=20,
+                pool_recycle=3600
+            )
+        elif db_conn_str.startswith("sqlite://"):  # Исправлено: db_conn_str
+            # Настройки для SQLite (для локальной разработки)
+            engine = sa.create_engine(
+                db_conn_str,  # Исправлено: db_conn_str
+                echo=False,
+                connect_args={"check_same_thread": False}
+            )
+        else:
+            raise ValueError(f"Неподдерживаемый тип базы данных в строке подключения: {db_conn_str}")  # Исправлено
 
         __factory = orm.sessionmaker(bind=engine)
 
-        # Импортируем ВСЕ модели здесь, чтобы они зарегистрировались
-        from . import customers, orders, products, loyalty, employees  # noqa: F401
+        # Импортируем модели
+        from . import customers, orders, products, loyalty, employees
 
-        # Создаем таблицы (если они еще не существуют)
+        # Создаем таблицы
         SqlAlchemyBase.metadata.create_all(engine)
         print("Таблицы успешно созданы/проверены")
 
@@ -53,19 +64,11 @@ def create_session() -> Session:
     if not __factory:
         raise RuntimeError("База данных не инициализирована. Вызовите global_init() сначала.")
 
-    # Создаем и возвращаем сессию
-    session = __factory()
-
-    # Для PostgreSQL рекомендуется явно устанавливать уровень изоляции
-    session.connection(execution_options={
-        "isolation_level": "READ COMMITTED"
-    })
-
-    return session
+    return __factory()
 
 
-# Функция для закрытия всех соединений
 def shutdown_session():
+    """Закрывает все соединения с базой данных"""
     global engine
     if engine:
         engine.dispose()
