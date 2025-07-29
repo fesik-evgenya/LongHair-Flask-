@@ -3,6 +3,7 @@ from flask import Flask, url_for, request, render_template, redirect, flash, jso
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, validate_csrf, CSRFError
 import datetime  # Добавлен импорт datetime
 from math import ceil
